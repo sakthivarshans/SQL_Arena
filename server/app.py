@@ -24,7 +24,7 @@ except Exception as e:
 try:
     from ..models import SQLArenaAction, SQLArenaObservation
     from .sql_arena_environment import SQLArenaEnvironment
-except ModuleNotFoundError:
+except ImportError:
     from models import SQLArenaAction, SQLArenaObservation
     from server.sql_arena_environment import SQLArenaEnvironment
 
