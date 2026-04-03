@@ -12,7 +12,7 @@ tags:
 
 # SQLArenaEnv
 
-> **The first OpenEnv-compatible environment for training multi-step SQL reasoning agents — where exploration queries are first-class actions.**
+> **The first OpenEnv compatible environment for training multi-step SQL reasoning agents — where exploration queries are first-class actions.**
 
 [![OpenEnv](https://img.shields.io/badge/OpenEnv-compatible-blue)](https://github.com/meta-pytorch/OpenEnv)
 [![Tasks](https://img.shields.io/badge/tasks-50-green)]()
