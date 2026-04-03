@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openenv-sql-arena-env"
+version = "1.0.0"
+description = "SQLArenaEnv — Multi-step SQL reasoning environment for OpenEnv. Agents explore a database, run investigative queries, and submit a final SQL answer. Tests true SQL understanding across 50 tasks in 4 difficulty tiers."
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core[core]>=0.2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+server = "sql_arena_env.server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["sql_arena_env", "sql_arena_env.server"]
+package-dir = { "sql_arena_env" = ".", "sql_arena_env.server" = "server" }
