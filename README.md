@@ -1,6 +1,7 @@
 ---
 title: SQLArenaEnv
 sdk: docker
+app_port: 8000
 pinned: true
 tags:
   - openenv
