@@ -2,7 +2,7 @@
 SQLArenaEnv Graders.
 
 Four deterministic graders, one per difficulty tier.
-Each grader runs 3 fixed tasks using the reference solution agent
+Each grader runs 3 fixed tasks using a heuristic agent
 and returns a score in [0.0, 1.0].
 """
 
@@ -15,13 +15,31 @@ from models import SQLArenaAction
 from tasks import get_task
 
 
+# Heuristic agents per difficulty — realistic but imperfect SQL attempts
+_HEURISTIC_AGENT = {
+    "easy_001": "SELECT name, salary FROM employees WHERE salary > 70000",  # missing id, dept, wrong order
+    "easy_002": "SELECT category, COUNT(*) as count FROM products GROUP BY category",  # correct
+    "easy_005": "SELECT SUM(price * quantity) as total_revenue FROM orders",  # missing ROUND
+    "medium_001": "SELECT c.name, COUNT(*) as order_count FROM customers c JOIN orders o ON c.customer_id=o.customer_id GROUP BY c.name HAVING COUNT(*)>1",  # missing status filter
+    "medium_004": "SELECT d.dept_name, AVG(e.salary) as avg_salary FROM departments d JOIN employees e ON d.dept_id=e.dept_id GROUP BY d.dept_name HAVING AVG(e.salary)>80000",  # correct
+    "medium_007": "SELECT e.name, e.salary FROM employees e WHERE e.salary > (SELECT AVG(salary) FROM employees)",  # missing dept_name
+    "hard_001": "SELECT c.name, c.city, SUM(o.amount) as total_amount FROM customers c JOIN orders o ON c.customer_id=o.customer_id GROUP BY c.customer_id",  # missing window rank
+    "hard_003": "SELECT o.category, COUNT(r.return_id)*100.0/COUNT(o.order_id) as return_rate FROM orders o LEFT JOIN returns r ON o.order_id=r.order_id GROUP BY o.category",  # missing ROUND
+    "hard_006": "SELECT c.name FROM customers c JOIN orders o ON c.customer_id=o.customer_id WHERE o.category='Technology' GROUP BY c.customer_id",  # wrong logic
+    "expert_001": "SELECT a.holder_name, SUBSTR(t.txn_date,1,7) as month, SUM(t.amount) as net_flow FROM accounts a JOIN transactions t ON a.account_id=t.account_id GROUP BY a.holder_name, month",  # missing credit/debit logic
+    "expert_003": "SELECT a.holder_name, t.category, SUM(t.amount) as spend FROM accounts a JOIN transactions t ON a.account_id=t.account_id WHERE t.txn_type='debit' GROUP BY a.holder_name, t.category",  # missing RANK, returns all not top
+    "expert_007": "SELECT a.holder_name, SUM(t.amount) as total FROM accounts a JOIN transactions t ON a.account_id=t.account_id WHERE t.txn_type='credit' GROUP BY a.holder_name",  # wrong formula
+}
+
+
 def _grade_task(task_id: str) -> float:
     env = SQLArenaEnvironment()
     task = get_task(task_id)
     if task is None:
         return 0.0
     env.reset(task_id=task_id)
-    obs = env.step(SQLArenaAction(sql=task.solution_sql, query_type="submit"))
+    sql = _HEURISTIC_AGENT.get(task_id, "SELECT 1")
+    obs = env.step(SQLArenaAction(sql=sql, query_type="submit"))
     return float(obs.reward) if obs.reward is not None else 0.0
 
 
