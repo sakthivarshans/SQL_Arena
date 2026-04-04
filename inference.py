@@ -1,17 +1,3 @@
-"""
-SQLArenaEnv Inference Script.
-
-Runs an LLM agent against SQLArenaEnv, emitting the mandatory
-[START] / [STEP] / [END] log format required by the hackathon evaluator.
-
-The agent strategy:
-  1. Read the question and schema from the reset observation
-  2. Run 1-2 exploratory queries to understand the data
-  3. Submit a final SQL query as the answer
-
-Usage:
-    API_BASE_URL=<url> MODEL_NAME=<model> HF_TOKEN=<token> python inference.py
-"""
 
 import asyncio
 import os
@@ -28,7 +14,7 @@ MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 TASK_NAME = os.getenv("SQLARENA_TASK", "medium_001")
 BENCHMARK = "sql_arena_env"
 MAX_STEPS = 8
-TEMPERATURE = 0.2
+TEMPERATURE = 0.0
 MAX_TOKENS = 512
 SUCCESS_SCORE_THRESHOLD = 0.5
 
@@ -39,6 +25,8 @@ Your job is to write correct SQLite SQL to answer the question.
 
 Rules:
 - Use only standard SQLite syntax (no MySQL/PostgreSQL specific features)
+- IMPORTANT: Never use SELECT * — always specify exact column names that match what the question asks for
+- Read the question carefully to know exactly which columns to return
 - You can run EXPLORE queries first to understand the data structure
 - When ready, submit your final answer with query_type="submit"
 - SQLite date functions: SUBSTR(date,1,7) for YYYY-MM, julianday() for date math
@@ -98,7 +86,6 @@ def build_user_prompt(obs, step: int, history: List[str]) -> str:
 
 
 def get_model_action(client: OpenAI, obs, step: int, history: List[str]):
-    """Call the LLM and parse its response into a SQLArenaAction."""
     import json
 
     user_prompt = build_user_prompt(obs, step, history)
@@ -114,7 +101,7 @@ def get_model_action(client: OpenAI, obs, step: int, history: List[str]):
         )
         text = (completion.choices[0].message.content or "").strip()
 
-        # Strip markdown if present
+        # remove markdown block if model wrapped it
         if text.startswith("```"):
             text = text.split("```")[1]
             if text.startswith("json"):
@@ -125,7 +112,7 @@ def get_model_action(client: OpenAI, obs, step: int, history: List[str]):
         sql = parsed.get("sql", "SELECT 1")
         query_type = parsed.get("query_type", "explore")
 
-        # Force submit if no explore steps left
+        # force submit if no explore budget left
         if obs.explore_steps_remaining == 0:
             query_type = "submit"
 
@@ -133,7 +120,7 @@ def get_model_action(client: OpenAI, obs, step: int, history: List[str]):
 
     except Exception as exc:
         print(f"[DEBUG] Model parse error: {exc} | raw: {text[:200] if 'text' in dir() else 'N/A'}", flush=True)
-        # Fallback: try a simple submit
+        # fallback query on parse error
         return SQLArenaAction(
             sql=f"SELECT * FROM sqlite_master WHERE type='table'",
             query_type="explore" if obs.explore_steps_remaining > 0 else "submit"
@@ -143,7 +130,7 @@ def get_model_action(client: OpenAI, obs, step: int, history: List[str]):
 async def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
-    # Connect to environment
+    # connect to env (docker or hf space)
     if IMAGE_NAME:
         env = await SQLArenaEnv.from_docker_image(IMAGE_NAME)
     else:
@@ -193,9 +180,8 @@ async def main() -> None:
             if done:
                 break
 
-        # Score: correctness of final submission (1.0 = correct, 0.4 = partial, 0.0 = wrong)
         final_reward = rewards[-1] if rewards else 0.0
-        score = final_reward  # already normalized [0,1]
+        score = final_reward
         success = score >= SUCCESS_SCORE_THRESHOLD
 
     except Exception as exc:

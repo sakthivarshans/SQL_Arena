@@ -1,4 +1,4 @@
-"""SQLArenaEnv — Multi-step SQL reasoning environment for OpenEnv."""
+# sql arena env package
 
 from .models import SQLArenaAction, SQLArenaObservation
 from .client import SQLArenaEnv

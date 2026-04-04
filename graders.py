@@ -1,10 +1,3 @@
-"""
-SQLArenaEnv Graders.
-
-Four deterministic graders, one per difficulty tier.
-Each grader runs 3 fixed tasks using a heuristic agent
-and returns a score in [0.0, 1.0].
-"""
 
 import sys
 import os
@@ -15,7 +8,7 @@ from models import SQLArenaAction
 from tasks import get_task
 
 
-# Heuristic agents per difficulty — realistic but imperfect SQL attempts
+# fixed SQL per task — close but not perfect
 _HEURISTIC_AGENT = {
     "easy_001": "SELECT name, salary FROM employees WHERE salary > 70000",  # missing id, dept, wrong order
     "easy_002": "SELECT category, COUNT(*) as count FROM products GROUP BY category",  # correct
@@ -55,31 +48,26 @@ def _grade_tier(task_ids: list, tier_name: str) -> float:
 
 
 def grade_easy() -> float:
-    """Easy grader — single table SELECT, WHERE, GROUP BY."""
     print("Running easy grader...")
     return _grade_tier(["easy_001", "easy_002", "easy_005"], "easy")
 
 
 def grade_medium() -> float:
-    """Medium grader — JOINs, HAVING, subqueries."""
     print("Running medium grader...")
     return _grade_tier(["medium_001", "medium_004", "medium_007"], "medium")
 
 
 def grade_hard() -> float:
-    """Hard grader — CTEs, window functions, complex aggregation."""
     print("Running hard grader...")
     return _grade_tier(["hard_001", "hard_003", "hard_006"], "hard")
 
 
 def grade_expert() -> float:
-    """Expert grader — correlated subqueries, financial analytics."""
     print("Running expert grader...")
     return _grade_tier(["expert_001", "expert_003", "expert_007"], "expert")
 
 
 def run_all_graders() -> dict:
-    """Run all four graders and return summary dict."""
     results = {
         "easy":   grade_easy(),
         "medium": grade_medium(),

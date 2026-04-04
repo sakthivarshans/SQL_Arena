@@ -1,1 +1,1 @@
-"""SQLArenaEnv server package."""
+# server package
