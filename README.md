@@ -253,11 +253,11 @@ sql_arena_env/
 
 ## Why SQLArenaEnv?
 
-**The gap it fills:** Text-to-SQL benchmarks like Spider and BIRD measure single-shot accuracy. No existing OpenEnv environment measures *multi-step SQL reasoning* where the agent can gather information before committing. This is the benchmark that matches how SQL is actually used.
+**The gap it fills:** Text to SQL benchmarks like Spider and BIRD measure single shot accuracy. No existing OpenEnv environment measures *multi step SQL reasoning* where the agent can gather information before committing. This is the benchmark that matches how SQL is actually used.
 
-**Why exploration matters for RL training:** An agent that learns to run `SELECT * FROM table LIMIT 5` before attempting a complex GROUP BY query is learning a genuinely useful cognitive strategy — the same strategy a senior data analyst uses. Standard single-shot SQL environments cannot teach this. SQLArenaEnv can.
+**Why exploration matters for RL training:** An agent that learns to run `SELECT * FROM table LIMIT 5` before attempting a complex GROUP BY query is learning a genuinely useful cognitive strategy, the same strategy a senior data analyst uses. Standard single shot SQL environments cannot teach this. SQLArenaEnv can.
 
-**What improves with training:** GRPO/PPO agents trained on SQLArenaEnv learn to use explore steps strategically — they converge to running schema-discovery queries first (`SELECT * FROM sqlite_master`), then sample queries, then submitting. This mirrors expert human behavior and transfers to real SQL tasks.
+**What improves with training:** GRPO/PPO agents trained on SQLArenaEnv learn to use explore steps strategically, they converge to running schema discovery queries first (`SELECT * FROM sqlite_master`), then sample queries, then submitting. This mirrors expert human behavior and transfers to real SQL tasks.
 
 ---
 
