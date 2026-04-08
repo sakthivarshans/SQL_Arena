@@ -4,3 +4,20 @@ type: space
 runtime: fastapi
 app: server.app:app
 port: 8000
+
+graders:
+  - id: easy
+    entry: graders:grade_easy
+    description: "Easy SQL tasks grader"
+
+  - id: medium
+    entry: graders:grade_medium
+    description: "Medium SQL tasks grader"
+
+  - id: hard
+    entry: graders:grade_hard
+    description: "Hard SQL tasks grader"
+
+  - id: expert
+    entry: graders:grade_expert
+    description: "Expert SQL tasks grader"
