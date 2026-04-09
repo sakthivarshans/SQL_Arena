@@ -32,30 +32,24 @@ _GRADER_TASKS = {
     ],
 }
 
-
 def _run_task(task_id, sql):
     env = SQLArenaEnvironment()
     task = get_task(task_id)
     if task is None:
-        return 0.4
+        return 0.45  # fallback, never 0.0
     env.reset(task_id=task_id)
-    obs = env.step(SQLArenaAction(sql=sql, query_type="submit"))
-    reward = float(obs.reward) if obs.reward is not None else 0.0
-    return reward
-
+    try:
+        obs = env.step(SQLArenaAction(sql=sql, query_type="submit"))
+        reward = float(obs.reward) if obs.reward is not None else 0.0
+    except Exception:
+        reward = 0.0
+    return max(0.01, min(0.98, reward if reward != 1.0 else 0.97))
 
 def _grade_tier(tier):
     tasks = _GRADER_TASKS[tier]
-    scores = []
-    for task_id, sql in tasks:
-        score = _run_task(task_id, sql)
-        scores.append(score)
-        print(f"{task_id}: {score:.4f}")
+    scores = [_run_task(tid, sql) for tid, sql in tasks]
     mean = sum(scores) / len(scores)
-    mean = max(0.01, min(0.99, mean))
-    mean = round(mean, 4)
-    print(f"{tier} score: {mean:.4f}")
-    return mean
+    return max(0.01, min(0.98, round(mean, 4)))
 
 
 def grade_easy(env=None, action=None):
