@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Optional
 from openenv.core.env_server.types import Action, Observation
 from pydantic import Field
 
-
 class SQLArenaAction(Action):
 
     sql: str = Field(..., description="SQL query to execute against the database")
