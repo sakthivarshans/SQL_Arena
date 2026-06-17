@@ -11,7 +11,6 @@ class SQLArenaAction(Action):
         description="'explore' for investigative queries, 'submit' for final answer"
     )
 
-
 class SQLArenaObservation(Observation):
 
     # task context
